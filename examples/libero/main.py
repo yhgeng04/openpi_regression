@@ -3,16 +3,23 @@ import dataclasses
 import logging
 import math
 import pathlib
-
+import sys
+sys.path.append('/root/openpi/third_party')
+sys.path.append('/root/openpi/third_party/libero')
+from openpi.training import config as _config
+from openpi.policies import policy_config
 import imageio
 from libero.libero import benchmark
 from libero.libero import get_libero_path
 from libero.libero.envs import OffScreenRenderEnv
+from openpi.shared import download
 import numpy as np
 from openpi_client import image_tools
 from openpi_client import websocket_client_policy as _websocket_client_policy
 import tqdm
 import tyro
+from PIL import Image
+import torch
 
 LIBERO_DUMMY_ACTION = [0.0] * 6 + [-1.0]
 LIBERO_ENV_RESOLUTION = 256  # resolution used to render training data
@@ -70,7 +77,11 @@ def eval_libero(args: Args) -> None:
     else:
         raise ValueError(f"Unknown task suite: {args.task_suite_name}")
 
-    client = _websocket_client_policy.WebsocketClientPolicy(args.host, args.port)
+    # client = _websocket_client_policy.WebsocketClientPolicy(args.host, args.port)
+    config = _config.get_config('pi05_libero')
+    # checkpoint_dir = download.maybe_download('gs://openpi-assets/checkpoints/pi05_libero')
+    checkpoint_dir = '/root/openpi/pi05_libero'
+    client = policy_config.create_trained_policy(config, checkpoint_dir)
 
     # Start evaluation
     total_episodes, total_successes = 0, 0
@@ -87,6 +98,7 @@ def eval_libero(args: Args) -> None:
         # Start episodes
         task_episodes, task_successes = 0, 0
         for episode_idx in tqdm.tqdm(range(args.num_trials_per_task)):
+
             logging.info(f"\nTask: {task_description}")
 
             # Reset environment
@@ -120,10 +132,8 @@ def eval_libero(args: Args) -> None:
                     wrist_img = image_tools.convert_to_uint8(
                         image_tools.resize_with_pad(wrist_img, args.resize_size, args.resize_size)
                     )
-
                     # Save preprocessed image for replay video
                     replay_images.append(img)
-
                     if not action_plan:
                         # Finished executing previous action chunk -- compute new chunk
                         # Prepare observations dict
@@ -215,5 +225,10 @@ def _quat2axisangle(quat):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(
+        level=logging.INFO,
+        filemode='a',
+        filename='/root/openpi/log/log.txt',
+        force=True
+        )
     tyro.cli(eval_libero)

@@ -32,7 +32,7 @@ importlib-resources==6.4.5
     # via etils
 kiwisolver==1.4.7
     # via matplotlib
-llvmlite==0.36.0
+llvmlite
     # via numba
 markdown-it-py==3.0.0
     # via rich
@@ -42,9 +42,9 @@ mdurl==0.1.2
     # via markdown-it-py
 mujoco==3.2.3
     # via robosuite
-numba==0.53.1
+numba
     # via robosuite
-numpy==1.22.4
+numpy
     # via
     #   -r examples/libero/requirements.in
     #   imageio
@@ -104,14 +104,14 @@ six==1.17.0
     #   python-xlib
 termcolor==2.4.0
     # via robosuite
-torch==1.11.0+cu113
+torch
     # via
     #   -r examples/libero/requirements.in
     #   torchaudio
     #   torchvision
-torchaudio==0.11.0+cu113
+torchaudio
     # via -r examples/libero/requirements.in
-torchvision==0.12.0+cu113
+torchvision
     # via -r examples/libero/requirements.in
 tqdm==4.67.1
     # via -r examples/libero/requirements.in
